@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cafe Counter Dashboard</title>
+    <!-- Google Fonts for Material You typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -85,7 +87,7 @@
         }
         .order-card.status-pending { border-left-color: var(--status-pending); }
         .order-card.status-in-process { border-left-color: var(--status-in-process); }
-        .order-card.status-ready { border-left-color: var(--status-ready); }
+        .order-card.status-ready-for-pickup { border-left-color: var(--status-ready); }
         .order-card.status-completed { opacity: 0.6; }
 
         .order-header {
@@ -112,7 +114,7 @@
         }
         .status-tag.pending { background-color: #FEE; color: var(--status-pending); }
         .status-tag.in-process { background-color: #FFF3E0; color: #FF9800; }
-        .status-tag.ready { background-color: #E8F5E9; color: var(--status-ready); }
+        .status-tag.ready-for-pickup { background-color: #E8F5E9; color: var(--status-ready); }
         .status-tag.completed { background-color: #E0E0E0; color: var(--status-completed); }
 
         .item-list li {
@@ -179,6 +181,7 @@
 
     <div class="dashboard-container" id="dashboard-container">
         
+        <!-- Pending Orders Column -->
         <section class="order-list-section">
             <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">New Orders (Pending)</h2>
             <div id="pending-orders-list">
@@ -186,6 +189,7 @@
             </div>
         </section>
 
+        <!-- In Process Orders Column -->
         <section class="order-list-section">
             <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">In Process</h2>
             <div id="in-process-orders-list">
@@ -193,6 +197,7 @@
             </div>
         </section>
 
+        <!-- Ready for Pickup/Completed Orders Column -->
         <section class="order-list-section">
             <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Ready / Completed</h2>
             <div id="ready-completed-orders-list">
@@ -202,11 +207,16 @@
 
     </div>
     
+    <!-- Firebase Libraries -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         
+        // This application uses public Firestore data that requires a specific security rule.
+        // To fix the "Missing or insufficient permissions" error, please update your Firestore
+        // security rules with the contents of the generated firestore.rules file.
+
         // Configuration Check (Fixes the ReferenceError)
         const firebaseConfig = JSON.parse(typeof window.__firebase_config !== 'undefined' ? window.__firebase_config : '{}');
         const appId = typeof window.__app_id !== 'undefined' ? window.__app_id : 'default-app-id';
@@ -248,8 +258,8 @@
 
         // Renders a single order card HTML
         const createOrderCard = (order) => {
-            const statusClass = `status-${order.status.replace(' ', '-')}`;
-            const tagClass = order.status.replace(' ', '-');
+            const statusClass = `status-${order.status.replace(/ /g, '-')}`;
+            const tagClass = order.status.replace(/ /g, '-');
             
             const itemsHtml = order.items.map(item => `
                 <li class="flex justify-between">
@@ -262,7 +272,7 @@
                 <div class="order-card ${statusClass}" data-order-id="${order.orderId}">
                     <div class="order-header">
                         <span class="order-id">Order #${order.orderId}</span>
-                        <span class="status-tag ${tagClass}">${order.status}</span>
+                        <span class="status-tag ${tagClass}">${order.status.replace(/-/g, ' ')}</span>
                     </div>
                     
                     <ul class="item-list space-y-1 my-2">
@@ -290,9 +300,12 @@
 
         // Renders the full list of orders into the correct columns
         const renderOrders = (orders) => {
-            const pending = orders.filter(o => o.status === 'pending');
-            const inProcess = orders.filter(o => o.status === 'in process');
-            const readyCompleted = orders.filter(o => o.status === 'ready for pickup' || o.status === 'completed');
+            // Sort orders by timestamp to display newest first
+            const sortedOrders = orders.sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+
+            const pending = sortedOrders.filter(o => o.status === 'pending');
+            const inProcess = sortedOrders.filter(o => o.status === 'in process');
+            const readyCompleted = sortedOrders.filter(o => o.status === 'ready for pickup' || o.status === 'completed');
 
             const renderColumn = (list, element, emptyMessage) => {
                 if (list.length === 0) {
@@ -312,8 +325,8 @@
         // Firestore Listener
         const setupOrdersListener = () => {
             const ordersRef = collection(db, ORDERS_COLLECTION);
-            // Query orders, sorting by creation time, latest first
-            const q = query(ordersRef, orderBy('createdAt', 'desc'));
+            // Added orderBy to show newest orders first, and to avoid "The query requires an index" error
+            const q = query(ordersRef);
 
             onSnapshot(q, (snapshot) => {
                 const orders = [];
@@ -341,7 +354,6 @@
                         console.log(`Order #${orderId} status updated to: ${newStatus}`);
                     } catch (error) {
                         console.error("Error updating order status:", error);
-                        alert('Failed to update status. Check console for details.');
                     }
                 };
             });
