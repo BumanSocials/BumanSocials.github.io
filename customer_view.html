@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Material You Cafe Menu</title>
+    <title>Cafe Menu</title>
     <!-- Google Fonts for Material You typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -109,7 +109,7 @@
         }
         
         /* Section headings */
-        .menu-section h2, .cart-section h2 {
+        .menu-section h2, .cart-section h2, .order-status-section h2 {
             font-size: clamp(1.5rem, 4vw, 2rem);
             font-weight: 500;
             margin-bottom: 1.5rem;
@@ -337,7 +337,7 @@
             align-items: center;
             transition: all var(--animation-speed);
         }
-        
+
         .modal-content {
             background-color: var(--md-sys-color-background);
             margin: 15% auto;
@@ -531,6 +531,55 @@
                 margin-top: 0;
             }
         }
+        
+        /* Order Status Section Styles */
+        .order-status-section {
+            padding: 2rem;
+            border-top: 1px solid var(--md-sys-color-outline);
+            margin-top: 2rem;
+            text-align: center;
+        }
+        
+        .order-status-card {
+            background-color: var(--md-sys-color-tertiary-container);
+            color: var(--md-sys-color-on-tertiary-container);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 1rem auto;
+            text-align: left;
+        }
+
+        .order-status-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .order-status-card p {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            color: var(--md-sys-color-on-primary);
+        }
+        
+        /* Status colors */
+        .status-Pending {
+            background-color: orange;
+        }
+        .status-InProgress {
+            background-color: var(--md-sys-color-secondary);
+        }
+        .status-Done {
+            background-color: green;
+        }
     </style>
 </head>
 <body>
@@ -540,7 +589,6 @@
             <h1>Let's Eat</h1>
             <p>A Taste of Excellence in Every Sip & Bite</p>
         </header>
-
         <div class="main-content">
             <!-- Menu Section -->
             <section class="menu-section">
@@ -679,6 +727,14 @@
                 <button class="checkout-btn">Checkout</button>
             </aside>
         </div>
+        
+        <!-- Order Status Section -->
+        <section class="order-status-section">
+            <h2>Your Order Status</h2>
+            <div id="order-status-display">
+                <p>Place an order to see its live status.</p>
+            </div>
+        </section>
     </div>
     
     <!-- Mobile Cart Summary (Fixed at bottom on mobile) -->
@@ -734,8 +790,93 @@
         </div>
     </div>
 
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Set Firebase logging level to debug
+        setLogLevel('debug');
 
-    <script>
+        // Global variables provided by the Canvas environment.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        let db, auth, userId;
+        let recentOrderId = null; // Store the document ID of the user's most recent order
+
+        // Real-time order status listener for the Customer View.
+        function setupCustomerStatusListener() {
+            if (!db || !userId) return;
+
+            const ordersCollection = collection(db, `artifacts/${appId}/public/data/orders`);
+            // We use a query to listen for changes to the user's specific order.
+            // If the user has a recent order ID, we listen to that specific document.
+            // Otherwise, we listen for a new order by this user.
+            const userOrdersQuery = query(ordersCollection, where("customerUserId", "==", userId));
+
+            onSnapshot(userOrdersQuery, (snapshot) => {
+                const ordersDisplay = document.getElementById('order-status-display');
+                ordersDisplay.innerHTML = '';
+                if (snapshot.empty) {
+                    ordersDisplay.innerHTML = '<p>Place an order to see its live status.</p>';
+                    return;
+                }
+                
+                snapshot.forEach((doc) => {
+                    const orderData = doc.data();
+                    const status = orderData.status;
+                    const orderId = doc.id;
+
+                    // Only show the most recent order for simplicity
+                    if (orderId === recentOrderId || snapshot.size === 1) {
+                         const statusCard = document.createElement('div');
+                        statusCard.classList.add('order-status-card');
+                        statusCard.innerHTML = `
+                            <h3>Order #<span id="order-id-display">${orderId}</span></h3>
+                            <p>Current Status: <span class="status-badge status-${status.replace(/\s+/g, '')}">${status}</span></p>
+                            <p>You can find this order at the counter.</p>
+                        `;
+                        ordersDisplay.appendChild(statusCard);
+                    }
+                });
+            });
+        }
+
+        async function initFirebase() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        console.log("Firebase Authenticated. User ID:", userId);
+                        setupCustomerStatusListener(); // Start the status listener
+                    } else {
+                        console.log("Firebase Auth State Changed: No user. Signing in anonymously...");
+                        try {
+                            if (initialAuthToken) {
+                                await signInWithCustomToken(auth, initialAuthToken);
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        } catch (error) {
+                            console.error("Authentication failed:", error);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+            }
+        }
+        
+        initFirebase();
+
         document.addEventListener('DOMContentLoaded', () => {
             const menuItems = document.querySelectorAll('.add-to-cart');
             const cartItemsContainer = document.querySelector('.cart-items');
@@ -904,7 +1045,30 @@
             });
 
             // Confirm order and show payment modal
-            confirmBtn.addEventListener('click', () => {
+            confirmBtn.addEventListener('click', async () => {
+                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const tax = subtotal * 0.08;
+                const total = subtotal + tax;
+
+                const order = {
+                    items: cart,
+                    subtotal: subtotal,
+                    tax: tax,
+                    total: total,
+                    timestamp: new Date(),
+                    status: 'Pending', // Initial status is Pending
+                    customerUserId: userId
+                };
+
+                try {
+                    const ordersCollection = collection(db, `artifacts/${appId}/public/data/orders`);
+                    const docRef = await addDoc(ordersCollection, order);
+                    recentOrderId = docRef.id;
+                    console.log("Order submitted successfully with ID: ", recentOrderId);
+                } catch (e) {
+                    console.error("Error adding document: ", e);
+                }
+
                 orderModal.classList.remove('is-visible');
                 setTimeout(() => orderModal.style.display = 'none', 500);
                 
