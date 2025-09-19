@@ -3,692 +3,720 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Let's Eat - Digital Menu</title>
+    <title>Material You Cafe Menu</title>
+    <!-- Google Fonts for Material You typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
+        /*
+        * Material You Inspired Color Palette
+        * Tonal colors suitable for a cafe theme.
+        */
+        :root {
+            --md-sys-color-primary: #6F4E37; /* A warm, deep brown */
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #F1E5D7; /* A light, creamy background */
+            --md-sys-color-on-primary-container: #2A170C;
+            --md-sys-color-secondary: #9C6644; /* A rich, toasted brown */
+            --md-sys-color-on-secondary: #FFFFFF;
+            --md-sys-color-secondary-container: #E8D3C3;
+            --md-sys-color-on-secondary-container: #331A0D;
+            --md-sys-color-tertiary: #A68A64; /* A soft, warm grey-brown */
+            --md-sys-color-on-tertiary: #FFFFFF;
+            --md-sys-color-tertiary-container: #EFE4D6;
+            --md-sys-color-on-tertiary-container: #3A2E1C;
+            --md-sys-color-background: #FFFBFF;
+            --md-sys-color-on-background: #1C1B1F;
+            --md-sys-color-surface: #FFFBFF;
+            --md-sys-color-on-surface: #1C1B1F;
+            --md-sys-color-surface-variant: #EDE0D3;
+            --md-sys-color-on-surface-variant: #4A443B;
+            --md-sys-color-outline: #7D7569;
+        }
+
+        /* Base styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Roboto', sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background-color: var(--md-sys-color-surface-variant);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
-            color: #333;
+            padding: 1.5rem;
         }
-        
+
+        /* Container and layout */
         .container {
             max-width: 1200px;
             width: 100%;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            background-color: var(--md-sys-color-surface);
+            border-radius: 28px; /* Large rounded corners for a soft feel */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
             overflow: hidden;
             display: flex;
             flex-direction: column;
         }
-        
+
+        /* Header */
         .header {
-            background: linear-gradient(to right, #ff7e5f, #feb47b);
-            color: white;
-            padding: 30px;
+            background-color: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+            padding: 2.5rem;
             text-align: center;
-            position: relative;
         }
-        
+
         .header h1 {
-            font-size: 3.5rem;
-            font-weight: 800;
-            letter-spacing: 3px;
-            margin-bottom: 10px;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
         }
-        
+
         .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
+            font-weight: 400;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            opacity: 0.8;
         }
-        
-        .table-info {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 10px 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .table-info h2 {
-            font-size: 1.2rem;
-            margin-bottom: 5px;
-        }
-        
-        .table-info p {
-            font-size: 1.4rem;
-            font-weight: bold;
-        }
-        
-        .content {
+
+        /* Main content and sections */
+        .main-content {
             display: flex;
+            flex-direction: row;
             flex-wrap: wrap;
-            min-height: 600px;
+        }
+
+        .menu-section {
+            flex: 1 1 70%;
+            padding: 2rem;
+        }
+
+        .cart-section {
+            flex: 1 1 30%;
+            background-color: var(--md-sys-color-tertiary-container);
+            color: var(--md-sys-color-on-tertiary-container);
+            padding: 2rem;
         }
         
-        .menu-panel {
-            flex: 2;
-            min-width: 300px;
-            padding: 30px;
-            background: #f8f9fa;
-            overflow-y: auto;
-            max-height: 700px;
+        /* Section headings */
+        .menu-section h2, .cart-section h2 {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--md-sys-color-secondary);
+            padding-bottom: 0.5rem;
         }
         
-        .cart-panel {
-            flex: 1;
-            min-width: 300px;
-            padding: 30px;
-            background: white;
-            border-left: 1px solid #eee;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .menu-title {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 30px;
-            position: relative;
-        }
-        
-        .menu-title h2 {
-            font-size: 2.2rem;
-            display: inline-block;
-        }
-        
-        .menu-title h2:after {
-            content: '';
-            display: block;
-            width: 50%;
-            height: 4px;
-            background: linear-gradient(to right, #ff7e5f, #feb47b);
-            margin: 10px auto;
-            border-radius: 2px;
-        }
-        
+        /* Menu categories */
         .menu-category {
-            margin-bottom: 30px;
+            margin-bottom: 2rem;
         }
-        
-        .category-title {
-            color: #e74c3c;
-            border-bottom: 2px solid #f1f2f6;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            font-size: 1.6rem;
-            display: flex;
-            align-items: center;
+
+        .menu-category h3 {
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            font-weight: 700;
+            color: var(--md-sys-color-on-surface);
+            margin-bottom: 1rem;
         }
-        
-        .category-title i {
-            margin-right: 10px;
-        }
-        
+
         .menu-items {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        /* Individual menu items - Cards */
+        .item-card {
+            background-color: var(--md-sys-color-surface);
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: 16px;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         
-        .menu-item {
-            background: white;
-            border-radius: 10px;
-            padding: 15px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            display: flex;
-            flex-direction: column;
+        .item-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
         }
-        
-        .menu-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+
+        .item-card h4 {
+            font-weight: 500;
+            font-size: 1.1rem;
+            color: var(--md-sys-color-on-surface);
+            margin-bottom: 0.25rem;
         }
-        
-        .item-name {
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 5px;
-            font-size: 1.2rem;
+
+        .item-card p.description {
+            font-size: 0.875rem;
+            color: var(--md-sys-color-on-surface-variant);
+            margin-bottom: 0.75rem;
         }
-        
-        .item-desc {
-            color: #7f8c8d;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-            line-height: 1.4;
-            flex-grow: 1;
-        }
-        
-        .item-controls {
+
+        .price-and-btn {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 10px;
         }
-        
-        .item-price {
-            color: #e74c3c;
+
+        .price {
+            font-size: 1.25rem;
             font-weight: 700;
-            font-size: 1.1rem;
+            color: var(--md-sys-color-secondary);
         }
-        
+
         .add-to-cart {
-            background: #2c3e50;
-            color: white;
+            background-color: var(--md-sys-color-secondary);
+            color: var(--md-sys-color-on-secondary);
             border: none;
-            border-radius: 5px;
-            padding: 8px 15px;
+            padding: 0.625rem 1.25rem;
+            border-radius: 20px;
             cursor: pointer;
-            transition: background 0.3s ease;
-            display: flex;
-            align-items: center;
+            transition: background-color 0.2s ease, transform 0.2s ease;
         }
-        
+
         .add-to-cart:hover {
-            background: #1a252f;
+            background-color: var(--md-sys-color-primary);
+            transform: scale(1.03);
         }
         
-        .add-to-cart i {
-            margin-right: 5px;
-        }
-        
-        .cart-title {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f1f2f6;
-        }
-        
+        /* Cart section styling */
         .cart-items {
-            flex-grow: 1;
-            overflow-y: auto;
-            margin-bottom: 20px;
+            list-style: none;
+            margin-bottom: 1.5rem;
         }
-        
+
         .cart-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--md-sys-color-outline);
         }
-        
-        .cart-item-info {
-            flex-grow: 1;
-        }
-        
-        .cart-item-name {
-            font-weight: 600;
-        }
-        
-        .cart-item-price {
-            color: #e74c3c;
-            font-weight: 700;
-        }
-        
-        .cart-item-quantity {
+
+        .item-info {
             display: flex;
-            align-items: center;
+            flex-direction: column;
         }
-        
-        .quantity-btn {
-            background: #f1f2f6;
+
+        .item-info span {
+            font-weight: 500;
+        }
+
+        .item-info small {
+            font-size: 0.8rem;
+            color: var(--md-sys-color-on-secondary-container);
+        }
+
+        .item-actions button {
+            background: none;
             border: none;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
+            color: var(--md-sys-color-primary);
             cursor: pointer;
+            font-size: 0.9rem;
+            margin: 0 0.25rem;
+            transition: color 0.2s ease;
+        }
+
+        .item-actions button:hover {
+            color: var(--md-sys-color-on-primary-container);
+        }
+        
+        /* Totals */
+        .cart-totals {
+            margin-top: 2rem;
+            border-top: 2px solid var(--md-sys-color-secondary);
+            padding-top: 1rem;
+        }
+
+        .cart-totals div {
             display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        
+        .cart-totals .total {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--md-sys-color-primary);
+        }
+
+        .checkout-btn {
+            width: 100%;
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            border: none;
+            padding: 1rem;
+            border-radius: 28px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-top: 1.5rem;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .checkout-btn:hover {
+            background-color: var(--md-sys-color-secondary);
+            transform: translateY(-2px);
+        }
+        
+        /* Modal Popup Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px);
             justify-content: center;
             align-items: center;
         }
-        
-        .quantity {
-            margin: 0 10px;
-            font-weight: 600;
+
+        .modal-content {
+            background-color: var(--md-sys-color-background);
+            margin: 15% auto;
+            padding: 2rem;
+            border-radius: 28px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
         }
-        
-        .remove-item {
-            color: #e74c3c;
-            background: none;
-            border: none;
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 2rem;
+            font-weight: bold;
             cursor: pointer;
-            margin-left: 10px;
+            transition: color 0.2s ease;
         }
-        
-        .cart-summary {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+
+        .close-btn:hover {
+            color: var(--md-sys-color-primary);
         }
-        
-        .summary-row {
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--md-sys-color-primary);
+        }
+
+        .summary-items {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .summary-item {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed var(--md-sys-color-outline);
         }
-        
-        .total {
-            font-weight: 700;
-            font-size: 1.2rem;
-            border-top: 2px solid #ddd;
-            padding-top: 10px;
-            margin-top: 10px;
+
+        .summary-item:last-child {
+            border-bottom: none;
         }
-        
-        .checkout-btn {
-            background: #27ae60;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            padding: 15px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            width: 100%;
+
+        .summary-item .item-name {
+            font-weight: 500;
         }
-        
-        .checkout-btn:hover {
-            background: #219653;
+
+        .summary-item .item-price {
+            font-weight: 400;
+            color: var(--md-sys-color-on-surface-variant);
         }
-        
-        .payment-methods {
-            margin-top: 20px;
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
+
+        .summary-totals {
+            margin-top: 1.5rem;
+            border-top: 2px solid var(--md-sys-color-secondary);
+            padding-top: 1rem;
         }
-        
-        .payment-title {
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
-        
-        .payment-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        
-        .payment-option {
-            flex: 1;
-            min-width: 120px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            padding: 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .payment-option:hover {
-            border-color: #3498db;
-        }
-        
-        .payment-option.selected {
-            border-color: #3498db;
-            background: rgba(52, 152, 219, 0.1);
-        }
-        
-        .payment-icon {
+
+        .summary-totals .total {
             font-size: 1.5rem;
-            margin-bottom: 5px;
-            color: #2c3e50;
+            font-weight: 700;
+            color: var(--md-sys-color-primary);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 2rem;
         }
         
-        .empty-cart {
-            text-align: center;
-            color: #7f8c8d;
-            padding: 20px;
+        .modal-buttons button {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 28px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .confirm-btn {
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+        }
+
+        .confirm-btn:hover {
+            background-color: var(--md-sys-color-secondary);
+        }
+
+        .cancel-btn {
+            background-color: var(--md-sys-color-surface-variant);
+            color: var(--md-sys-color-on-surface-variant);
         }
         
-        .footer {
-            background: #2c3e50;
-            color: white;
-            text-align: center;
-            padding: 20px;
-            font-size: 0.9rem;
+        .cancel-btn:hover {
+            background-color: var(--md-sys-color-outline);
         }
         
+        /* Responsive design */
         @media (max-width: 768px) {
-            .content {
+            .main-content {
                 flex-direction: column;
             }
-            
-            .header h1 {
-                font-size: 2.5rem;
+            .menu-section, .cart-section {
+                flex-basis: 100%;
+                padding: 1.5rem;
             }
-            
-            .cart-panel {
-                border-left: none;
-                border-top: 1px solid #eee;
+            .cart-section {
+                border-top: 1px solid var(--md-sys-color-outline);
+            }
+            .header h1 {
+                font-size: 2.2rem;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>LET'S EAT</h1>
-            <p>Experience the finest flavors in town</p>
-            <div class="table-info">
-                <h2>TABLE NUMBER</h2>
-                <p>L1</p>
-            </div>
-        </div>
-        
-        <div class="content">
-            <div class="menu-panel">
-                <div class="menu-title">
-                    <h2>OUR MENU</h2>
-                </div>
+        <!-- Header -->
+        <header class="header">
+            <h1>Let's Eat</h1>
+            <p>A Taste of Excellence in Every Sip & Bite</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Menu Section -->
+            <section class="menu-section">
+                <h2>Our Menu</h2>
                 
                 <div class="menu-category">
-                    <h3 class="category-title"><i class="fas fa-utensils"></i> APPETIZERS</h3>
+                    <h3>Coffee</h3>
                     <div class="menu-items">
-                        <div class="menu-item">
-                            <div class="item-name">Garlic Bread</div>
-                            <div class="item-desc">Toasted bread with garlic butter and herbs</div>
-                            <div class="item-controls">
-                                <div class="item-price">$5.99</div>
-                                <button class="add-to-cart" data-id="1" data-name="Garlic Bread" data-price="5.99"><i class="fas fa-cart-plus"></i> Add</button>
+                        <div class="item-card" data-name="Espresso" data-price="2.50">
+                            <h4>Espresso</h4>
+                            <p class="description">Strong, concentrated coffee shot. The perfect pick-me-up.</p>
+                            <div class="price-and-btn">
+                                <span class="price">$2.50</span>
+                                <button class="add-to-cart">Add to Cart</button>
                             </div>
                         </div>
-                        <div class="menu-item">
-                            <div class="item-name">Mozzarella Sticks</div>
-                            <div class="item-desc">Crispy fried mozzarella with marinara sauce</div>
-                            <div class="item-controls">
-                                <div class="item-price">$7.99</div>
-                                <button class="add-to-cart" data-id="2" data-name="Mozzarella Sticks" data-price="7.99"><i class="fas fa-cart-plus"></i> Add</button>
+                        <div class="item-card" data-name="Latte" data-price="4.00">
+                            <h4>Latte</h4>
+                            <p class="description">Smooth espresso with steamed milk and a thin layer of foam.</p>
+                            <div class="price-and-btn">
+                                <span class="price">$4.00</span>
+                                <button class="add-to-cart">Add to Cart</button>
                             </div>
                         </div>
-                        <div class="menu-item">
-                            <div class="item-name">Bruschetta</div>
-                            <div class="item-desc">Toasted bread topped with tomatoes, garlic and basil</div>
-                            <div class="item-controls">
-                                <div class="item-price">$8.99</div>
-                                <button class="add-to-cart" data-id="3" data-name="Bruschetta" data-price="8.99"><i class="fas fa-cart-plus"></i> Add</button>
+                        <div class="item-card" data-name="Cappuccino" data-price="4.50">
+                            <h4>Cappuccino</h4>
+                            <p class="description">A classic combination of espresso, steamed milk, and rich foam.</p>
+                            <div class="price-and-btn">
+                                <span class="price">$4.50</span>
+                                <button class="add-to-cart">Add to Cart</button>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="menu-category">
-                    <h3 class="category-title"><i class="fas fa-hamburger"></i> MAIN COURSES</h3>
+                    <h3>Pastries</h3>
                     <div class="menu-items">
-                        <div class="menu-item">
-                            <div class="item-name">Grilled Salmon</div>
-                            <div class="item-desc">Atlantic salmon with lemon butter sauce and vegetables</div>
-                            <div class="item-controls">
-                                <div class="item-price">$22.99</div>
-                                <button class="add-to-cart" data-id="4" data-name="Grilled Salmon" data-price="22.99"><i class="fas fa-cart-plus"></i> Add</button>
+                        <div class="item-card" data-name="Croissant" data-price="3.00">
+                            <h4>Croissant</h4>
+                            <p class="description">Flaky, buttery pastry, baked fresh every morning.</p>
+                            <div class="price-and-btn">
+                                <span class="price">$3.00</span>
+                                <button class="add-to-cart">Add to Cart</button>
                             </div>
                         </div>
-                        <div class="menu-item">
-                            <div class="item-name">Ribeye Steak</div>
-                            <div class="item-desc">12oz ribeye with mashed potatoes and grilled asparagus</div>
-                            <div class="item-controls">
-                                <div class="item-price">$24.99</div>
-                                <button class="add-to-cart" data-id="5" data-name="Ribeye Steak" data-price="24.99"><i class="fas fa-cart-plus"></i> Add</button>
-                            </div>
-                        </div>
-                        <div class="menu-item">
-                            <div class="item-name">Mushroom Risotto</div>
-                            <div class="item-desc">Creamy arborio rice with wild mushrooms and parmesan</div>
-                            <div class="item-controls">
-                                <div class="item-price">$16.99</div>
-                                <button class="add-to-cart" data-id="6" data-name="Mushroom Risotto" data-price="16.99"><i class="fas fa-cart-plus"></i> Add</button>
+                        <div class="item-card" data-name="Muffin" data-price="3.50">
+                            <h4>Muffin</h4>
+                            <p class="description">Your choice of blueberry, chocolate chip, or bran.</p>
+                            <div class="price-and-btn">
+                                <span class="price">$3.50</span>
+                                <button class="add-to-cart">Add to Cart</button>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="menu-category">
-                    <h3 class="category-title"><i class="fas fa-cocktail"></i> DRINKS</h3>
+                    <h3>Sandwiches</h3>
                     <div class="menu-items">
-                        <div class="menu-item">
-                            <div class="item-name">Signature Cocktails</div>
-                            <div class="item-desc">Ask your server for our seasonal specials</div>
-                            <div class="item-controls">
-                                <div class="item-price">$10.99</div>
-                                <button class="add-to-cart" data-id="7" data-name="Signature Cocktails" data-price="10.99"><i class="fas fa-cart-plus"></i> Add</button>
+                        <div class="item-card" data-name="Turkey & Swiss" data-price="7.50">
+                            <h4>Turkey & Swiss</h4>
+                            <p class="description">Roasted turkey, Swiss cheese, and fresh greens on whole-wheat bread.</p>
+                            <div class="price-and-btn">
+                                <span class="price">$7.50</span>
+                                <button class="add-to-cart">Add to Cart</button>
                             </div>
                         </div>
-                        <div class="menu-item">
-                            <div class="item-name">Wine Selection</div>
-                            <div class="item-desc">Red, white, and sparkling wines from around the world</div>
-                            <div class="item-controls">
-                                <div class="item-price">$12.99</div>
-                                <button class="add-to-cart" data-id="8" data-name="Wine Selection" data-price="12.99"><i class="fas fa-cart-plus"></i> Add</button>
-                            </div>
-                        </div>
-                        <div class="menu-item">
-                            <div class="item-name">Craft Beers</div>
-                            <div class="item-desc">Local and imported craft beers on tap and bottled</div>
-                            <div class="item-controls">
-                                <div class="item-price">$6.99</div>
-                                <button class="add-to-cart" data-id="9" data-name="Craft Beers" data-price="6.99"><i class="fas fa-cart-plus"></i> Add</button>
+                        <div class="item-card" data-name="Veggie Delight" data-price="6.50">
+                            <h4>Veggie Delight</h4>
+                            <p class="description">Assorted grilled vegetables, hummus, and feta on toasted ciabatta.</p>
+                            <div class="price-and-btn">
+                                <span class="price">$6.50</span>
+                                <button class="add-to-cart">Add to Cart</button>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
             
-            <div class="cart-panel">
-                <h2 class="cart-title">YOUR ORDER</h2>
-                
-                <div class="cart-items" id="cart-items">
-                    <div class="empty-cart">
-                        <i class="fas fa-shopping-cart" style="font-size: 3rem; margin-bottom: 15px;"></i>
-                        <p>Your cart is empty</p>
-                        <p>Add items from the menu to get started</p>
-                    </div>
-                </div>
-                
-                <div class="cart-summary">
-                    <div class="summary-row">
+            <!-- Shopping Cart Section -->
+            <aside class="cart-section">
+                <h2>Your Order</h2>
+                <ul class="cart-items">
+                    <!-- Cart items will be dynamically added here -->
+                </ul>
+                <div class="cart-totals">
+                    <div>
                         <span>Subtotal:</span>
-                        <span id="subtotal">$0.00</span>
+                        <span id="subtotal" class="subtotal-amount">$0.00</span>
                     </div>
-                    <div class="summary-row">
+                    <div>
                         <span>Tax (8%):</span>
-                        <span id="tax">$0.00</span>
+                        <span id="tax" class="tax-amount">$0.00</span>
                     </div>
-                    <div class="summary-row total">
+                    <div class="total">
                         <span>Total:</span>
-                        <span id="total">$0.00</span>
+                        <span id="total" class="total-amount">$0.00</span>
                     </div>
                 </div>
-                
-                <div class="payment-methods">
-                    <div class="payment-title">Payment Method (Pay at Counter):</div>
-                    <div class="payment-options">
-                        <div class="payment-option selected">
-                            <div class="payment-icon"><i class="fas fa-money-bill-wave"></i></div>
-                            <div>Cash</div>
-                        </div>
-                        <div class="payment-option">
-                            <div class="payment-icon"><i class="fas fa-credit-card"></i></div>
-                            <div>Card</div>
-                        </div>
-                        <div class="payment-option">
-                            <div class="payment-icon"><i class="fas fa-mobile-alt"></i></div>
-                            <div>Mobile</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <button class="checkout-btn" id="checkout-btn">Confirm Order & Pay at Counter</button>
-            </div>
+                <button class="checkout-btn">Checkout</button>
+            </aside>
         </div>
-        
-        <div class="footer">
-            <p>© 2025 BANOD.CO - Restaurant Management System</p>
+    </div>
+    
+    <!-- Order Summary Modal Popup -->
+    <div id="order-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <div class="modal-header">
+                <h3>Order Summary</h3>
+            </div>
+            <ul id="summary-items" class="summary-items">
+                <!-- Summary items will be added here dynamically -->
+            </ul>
+            <div class="summary-totals">
+                <div>
+                    <span>Subtotal:</span>
+                    <span id="summary-subtotal" class="summary-subtotal-amount"></span>
+                </div>
+                <div>
+                    <span>Tax:</span>
+                    <span id="summary-tax" class="summary-tax-amount"></span>
+                </div>
+                <div class="total">
+                    <span>Total:</span>
+                    <span id="summary-total" class="summary-total-amount"></span>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="cancel-btn">Cancel</button>
+                <button class="confirm-btn">Confirm Order</button>
+            </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            let cart = [];
-            const cartItems = document.getElementById('cart-items');
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuItems = document.querySelectorAll('.add-to-cart');
+            const cartItemsContainer = document.querySelector('.cart-items');
             const subtotalEl = document.getElementById('subtotal');
             const taxEl = document.getElementById('tax');
             const totalEl = document.getElementById('total');
-            const checkoutBtn = document.getElementById('checkout-btn');
-            const paymentOptions = document.querySelectorAll('.payment-option');
+            const checkoutBtn = document.querySelector('.checkout-btn');
             
-            // Add to cart functionality
-            document.querySelectorAll('.add-to-cart').forEach(button => {
-                button.addEventListener('click', function() {
-                    const id = this.dataset.id;
-                    const name = this.dataset.name;
-                    const price = parseFloat(this.dataset.price);
+            // Modal elements
+            const modal = document.getElementById('order-modal');
+            const closeBtn = document.querySelector('.close-btn');
+            const summaryItemsContainer = document.getElementById('summary-items');
+            const summarySubtotalEl = document.getElementById('summary-subtotal');
+            const summaryTaxEl = document.getElementById('summary-tax');
+            const summaryTotalEl = document.getElementById('summary-total');
+            const modalCancelBtn = document.querySelector('.modal-buttons .cancel-btn');
+
+            let cart = [];
+
+            // Add item to cart
+            menuItems.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const itemCard = e.target.closest('.item-card');
+                    const name = itemCard.dataset.name;
+                    const price = parseFloat(itemCard.dataset.price);
                     
-                    // Check if item already in cart
-                    const existingItem = cart.find(item => item.id === id);
+                    const existingItem = cart.find(item => item.name === name);
                     
                     if (existingItem) {
                         existingItem.quantity++;
                     } else {
-                        cart.push({
-                            id,
-                            name,
-                            price,
-                            quantity: 1
-                        });
+                        cart.push({ name, price, quantity: 1 });
                     }
                     
                     updateCart();
                 });
             });
-            
-            // Payment method selection
-            paymentOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    paymentOptions.forEach(opt => opt.classList.remove('selected'));
-                    this.classList.add('selected');
-                });
-            });
-            
-            // Checkout button
-            checkoutBtn.addEventListener('click', function() {
-                if (cart.length === 0) {
-                    alert('Your cart is empty. Please add items before checking out.');
-                    return;
-                }
-                
-                const paymentMethod = document.querySelector('.payment-option.selected').textContent.trim();
-                alert(`Order confirmed! Please proceed to the counter to pay with ${paymentMethod}. Your total is $${calculateTotal().toFixed(2)}`);
-                
-                // Clear cart
-                cart = [];
-                updateCart();
-            });
-            
+
             // Update cart display
             function updateCart() {
-                if (cart.length === 0) {
-                    cartItems.innerHTML = `
-                        <div class="empty-cart">
-                            <i class="fas fa-shopping-cart" style="font-size: 3rem; margin-bottom: 15px;"></i>
-                            <p>Your cart is empty</p>
-                            <p>Add items from the menu to get started</p>
+                cartItemsContainer.innerHTML = '';
+                cart.forEach(item => {
+                    const li = document.createElement('li');
+                    li.classList.add('cart-item');
+                    li.innerHTML = `
+                        <div class="item-info">
+                            <span>${item.name}</span>
+                            <small>$${item.price.toFixed(2)} x ${item.quantity}</small>
+                        </div>
+                        <div class="item-actions">
+                            <button class="increase-item" data-name="${item.name}"><i class="fas fa-plus"></i></button>
+                            <button class="decrease-item" data-name="${item.name}"><i class="fas fa-minus"></i></button>
+                            <button class="remove-item" data-name="${item.name}"><i class="fas fa-trash"></i></button>
                         </div>
                     `;
-                } else {
-                    cartItems.innerHTML = '';
-                    cart.forEach(item => {
-                        const cartItemEl = document.createElement('div');
-                        cartItemEl.className = 'cart-item';
-                        cartItemEl.innerHTML = `
-                            <div class="cart-item-info">
-                                <div class="cart-item-name">${item.name}</div>
-                                <div class="cart-item-price">$${item.price.toFixed(2)}</div>
-                            </div>
-                            <div class="cart-item-quantity">
-                                <button class="quantity-btn decrease" data-id="${item.id}">-</button>
-                                <span class="quantity">${item.quantity}</span>
-                                <button class="quantity-btn increase" data-id="${item.id}">+</button>
-                                <button class="remove-item" data-id="${item.id}"><i class="fas fa-trash"></i></button>
-                            </div>
-                        `;
-                        cartItems.appendChild(cartItemEl);
-                    });
-                    
-                    // Add event listeners for quantity buttons
-                    document.querySelectorAll('.decrease').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            const id = this.dataset.id;
-                            const item = cart.find(item => item.id === id);
-                            if (item.quantity > 1) {
-                                item.quantity--;
-                            } else {
-                                cart = cart.filter(item => item.id !== id);
-                            }
-                            updateCart();
-                        });
-                    });
-                    
-                    document.querySelectorAll('.increase').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            const id = this.dataset.id;
-                            const item = cart.find(item => item.id === id);
+                    cartItemsContainer.appendChild(li);
+                });
+
+                // Attach event listeners to new buttons
+                attachCartEventListeners();
+                updateTotals();
+            }
+
+            // Attach listeners for cart actions
+            function attachCartEventListeners() {
+                document.querySelectorAll('.increase-item').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const name = this.dataset.name;
+                        const item = cart.find(item => item.name === name);
+                        if (item) {
                             item.quantity++;
                             updateCart();
-                        });
+                        }
                     });
-                    
-                    document.querySelectorAll('.remove-item').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            const id = this.dataset.id;
-                            cart = cart.filter(item => item.id !== id);
-                            updateCart();
-                        });
-                    });
-                }
+                });
                 
-                updateTotals();
+                document.querySelectorAll('.decrease-item').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const name = this.dataset.name;
+                        const item = cart.find(item => item.name === name);
+                        if (item && item.quantity > 1) {
+                            item.quantity--;
+                            updateCart();
+                        } else if (item && item.quantity === 1) {
+                            cart = cart.filter(cartItem => cartItem.name !== name);
+                            updateCart();
+                        }
+                    });
+                });
+                
+                document.querySelectorAll('.remove-item').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const name = this.dataset.name;
+                        cart = cart.filter(cartItem => cartItem.name !== name);
+                        updateCart();
+                    });
+                });
             }
             
             // Calculate and update totals
             function updateTotals() {
-                const { subtotal, tax, total } = calculateTotals();
+                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const tax = subtotal * 0.08; // 8% tax
+                const total = subtotal + tax;
                 
                 subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
                 taxEl.textContent = `$${tax.toFixed(2)}`;
                 totalEl.textContent = `$${total.toFixed(2)}`;
             }
             
-            function calculateTotals() {
-                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                const tax = subtotal * 0.08; // 8% tax
-                const total = subtotal + tax;
-                
-                return { subtotal, tax, total };
-            }
+            // Show modal on checkout button click
+            checkoutBtn.addEventListener('click', () => {
+                if (cart.length > 0) {
+                    populateSummary();
+                    modal.style.display = 'flex';
+                }
+            });
+
+            // Close modal when close button is clicked
+            closeBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
             
-            function calculateTotal() {
-                return calculateTotals().total;
+            // Close modal when cancel button is clicked
+            modalCancelBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+
+            // Close modal when clicking outside of it
+            window.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+            
+            // Populate the order summary modal
+            function populateSummary() {
+                summaryItemsContainer.innerHTML = '';
+                let summarySubtotal = 0;
+                
+                cart.forEach(item => {
+                    const li = document.createElement('li');
+                    li.classList.add('summary-item');
+                    li.innerHTML = `
+                        <span class="item-name">${item.name} (${item.quantity})</span>
+                        <span class="item-price">$${(item.price * item.quantity).toFixed(2)}</span>
+                    `;
+                    summaryItemsContainer.appendChild(li);
+                    summarySubtotal += item.price * item.quantity;
+                });
+                
+                const summaryTax = summarySubtotal * 0.08;
+                const summaryTotal = summarySubtotal + summaryTax;
+                
+                summarySubtotalEl.textContent = `$${summarySubtotal.toFixed(2)}`;
+                summaryTaxEl.textContent = `$${summaryTax.toFixed(2)}`;
+                summaryTotalEl.textContent = `$${summaryTotal.toFixed(2)}`;
             }
         });
     </script>
