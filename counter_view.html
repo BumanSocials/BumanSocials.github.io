@@ -362,6 +362,28 @@
         // Initial setup on page load
         window.onload = initFirebase;
     </script>
-    
+    <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyAyAlM0fEGZvBUZ_7CCo-zkT6u_RfZdo3I",
+    authDomain: "buman-socials-409e5.firebaseapp.com",
+    projectId: "buman-socials-409e5",
+    storageBucket: "buman-socials-409e5.firebasestorage.app",
+    messagingSenderId: "1085941766024",
+    appId: "1:1085941766024:web:42ebf452dca085354a4c3d",
+    measurementId: "G-RGHFN672QL"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
 </body>
 </html>
