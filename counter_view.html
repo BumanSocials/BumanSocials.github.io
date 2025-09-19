@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafe Counter Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /*
+        * Material You Inspired Color Palette (Matching Customer View)
+        */
+        :root {
+            --md-sys-color-primary: #6F4E37; /* A warm, deep brown */
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #F1E5D7; /* A light, creamy background */
+            --md-sys-color-on-primary-container: #2A170C;
+            --md-sys-color-secondary: #9C6644; /* A rich, toasted brown */
+            --md-sys-color-on-secondary: #FFFFFF;
+            --md-sys-color-surface: #FFFBFE; /* Near-white background */
+            --md-sys-color-on-surface: #1C1B1F;
+            --md-sys-color-background: #F8F5F2; /* Light overall background */
+            --md-sys-color-outline: #7B757F;
+            --md-sys-color-error: #BA1A1A;
+            
+            /* Status Colors */
+            --status-pending: #BA1A1A;      /* Red for immediate attention */
+            --status-in-process: #FFB74D;  /* Amber for actively working */
+            --status-ready: #4CAF50;       /* Green for ready to collect */
+            --status-completed: #A9A9A9;   /* Grey for archived orders */
+            
+            /* Text styles */
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background-color: var(--md-sys-color-background);
+            color: var(--md-sys-color-on-surface);
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .main-title {
+            color: var(--md-sys-color-primary);
+            font-weight: 700;
+            font-size: 2rem;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .order-list-section {
+            background-color: var(--md-sys-color-surface);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 1.5rem;
+        }
+
+        .order-card {
+            background-color: var(--md-sys-color-primary-container);
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+            border-left: 5px solid transparent;
+        }
+        .order-card.status-pending { border-left-color: var(--status-pending); }
+        .order-card.status-in-process { border-left-color: var(--status-in-process); }
+        .order-card.status-ready { border-left-color: var(--status-ready); }
+        .order-card.status-completed { opacity: 0.6; }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .order-id {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--md-sys-color-on-primary-container);
+        }
+
+        .status-tag {
+            padding: 0.25rem 0.75rem;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        .status-tag.pending { background-color: #FEE; color: var(--status-pending); }
+        .status-tag.in-process { background-color: #FFF3E0; color: #FF9800; }
+        .status-tag.ready { background-color: #E8F5E9; color: var(--status-ready); }
+        .status-tag.completed { background-color: #E0E0E0; color: var(--status-completed); }
+
+        .item-list li {
+            font-size: 0.9rem;
+            padding: 0.2rem 0;
+        }
+        
+        .order-total {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+            color: var(--md-sys-color-secondary);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .action-buttons button {
+            flex-grow: 1;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .btn-process {
+            background-color: var(--md-sys-color-secondary);
+            color: var(--md-sys-color-on-secondary);
+        }
+        .btn-process:hover { background-color: #8C5634; }
+
+        .btn-ready {
+            background-color: var(--status-ready);
+            color: var(--md-sys-color-on-primary);
+        }
+        .btn-ready:hover { background-color: #388E3C; }
+
+        .btn-complete {
+            background-color: var(--status-completed);
+            color: var(--md-sys-color-on-primary);
+        }
+        .btn-complete:hover { background-color: #757575; }
+
+        /* Media Query for single column on small screens */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="flex justify-between items-center max-w-7xl mx-auto">
+            <h1 class="main-title">Cafe Counter Dashboard</h1>
+            <span class="text-sm font-light text-gray-500">Real-Time Order Management</span>
+        </div>
+    </header>
+
+    <div class="dashboard-container" id="dashboard-container">
+        
+        <section class="order-list-section">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">New Orders (Pending)</h2>
+            <div id="pending-orders-list">
+                <p class="text-gray-500 text-sm">No new orders.</p>
+            </div>
+        </section>
+
+        <section class="order-list-section">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">In Process</h2>
+            <div id="in-process-orders-list">
+                <p class="text-gray-500 text-sm">No orders currently being made.</p>
+            </div>
+        </section>
+
+        <section class="order-list-section">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Ready / Completed</h2>
+            <div id="ready-completed-orders-list">
+                <p class="text-gray-500 text-sm">No recent completions.</p>
+            </div>
+        </section>
+
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        
+        // Configuration Check (Fixes the ReferenceError)
+        const firebaseConfig = JSON.parse(typeof window.__firebase_config !== 'undefined' ? window.__firebase_config : '{}');
+        const appId = typeof window.__app_id !== 'undefined' ? window.__app_id : 'default-app-id';
+
+        let app, db, auth;
+        const ORDERS_COLLECTION = `artifacts/${appId}/public/data/orders`;
+
+        // DOM elements
+        const pendingList = document.getElementById('pending-orders-list');
+        const inProcessList = document.getElementById('in-process-orders-list');
+        const readyCompletedList = document.getElementById('ready-completed-orders-list');
+
+        // Initialize Firebase
+        const initFirebase = async () => {
+            try {
+                if (firebaseConfig && Object.keys(firebaseConfig).length > 0) {
+                    app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+
+                    // Counter view signs in anonymously to access public data
+                    await signInAnonymously(auth);
+                    console.log('Firebase initialized and Counter is signed in.');
+                    
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            setupOrdersListener();
+                        } else {
+                            console.log('No user is signed in. Re-attempting sign in.');
+                        }
+                    });
+                } else {
+                    console.error('Firebase config is not defined. Cannot initialize.');
+                }
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+            }
+        };
+
+        // Renders a single order card HTML
+        const createOrderCard = (order) => {
+            const statusClass = `status-${order.status.replace(' ', '-')}`;
+            const tagClass = order.status.replace(' ', '-');
+            
+            const itemsHtml = order.items.map(item => `
+                <li class="flex justify-between">
+                    <span>${item.name} <span class="text-gray-500">x${item.quantity}</span></span>
+                    <span class="font-medium">$${(item.price * item.quantity).toFixed(2)}</span>
+                </li>
+            `).join('');
+
+            return `
+                <div class="order-card ${statusClass}" data-order-id="${order.orderId}">
+                    <div class="order-header">
+                        <span class="order-id">Order #${order.orderId}</span>
+                        <span class="status-tag ${tagClass}">${order.status}</span>
+                    </div>
+                    
+                    <ul class="item-list space-y-1 my-2">
+                        ${itemsHtml}
+                    </ul>
+
+                    <div class="order-total flex justify-between pt-2 border-t border-gray-300">
+                        <span>Total:</span>
+                        <span>$${order.total.toFixed(2)}</span>
+                    </div>
+
+                    <div class="action-buttons">
+                        ${order.status === 'pending' ? 
+                            `<button class="status-btn btn-process" data-status="in process"><i class="fas fa-hand-paper mr-1"></i> Start Process</button>` : ''}
+                        
+                        ${order.status === 'in process' ? 
+                            `<button class="status-btn btn-ready" data-status="ready for pickup"><i class="fas fa-check-circle mr-1"></i> Ready</button>` : ''}
+
+                        ${order.status === 'ready for pickup' ? 
+                            `<button class="status-btn btn-complete" data-status="completed"><i class="fas fa-box-open mr-1"></i> Completed</button>` : ''}
+                    </div>
+                </div>
+            `;
+        };
+
+        // Renders the full list of orders into the correct columns
+        const renderOrders = (orders) => {
+            const pending = orders.filter(o => o.status === 'pending');
+            const inProcess = orders.filter(o => o.status === 'in process');
+            const readyCompleted = orders.filter(o => o.status === 'ready for pickup' || o.status === 'completed');
+
+            const renderColumn = (list, element, emptyMessage) => {
+                if (list.length === 0) {
+                    element.innerHTML = `<p class="text-gray-500 text-sm p-4">${emptyMessage}</p>`;
+                } else {
+                    element.innerHTML = list.map(createOrderCard).join('');
+                }
+            };
+
+            renderColumn(pending, pendingList, 'No new orders.');
+            renderColumn(inProcess, inProcessList, 'No orders currently being made.');
+            renderColumn(readyCompleted, readyCompletedList, 'No recent completions.');
+
+            setupStatusButtonListeners();
+        };
+
+        // Firestore Listener
+        const setupOrdersListener = () => {
+            const ordersRef = collection(db, ORDERS_COLLECTION);
+            // Query orders, sorting by creation time, latest first
+            const q = query(ordersRef, orderBy('createdAt', 'desc'));
+
+            onSnapshot(q, (snapshot) => {
+                const orders = [];
+                snapshot.forEach(doc => {
+                    orders.push(doc.data());
+                });
+                renderOrders(orders);
+            }, (error) => {
+                console.error("Error listening to orders:", error);
+            });
+        };
+
+        // Event Listener to handle status updates
+        const setupStatusButtonListeners = () => {
+            document.querySelectorAll('.status-btn').forEach(btn => {
+                btn.onclick = async function() {
+                    const orderId = this.closest('.order-card').dataset.orderId;
+                    const newStatus = this.dataset.status;
+                    const orderDocRef = doc(db, ORDERS_COLLECTION, orderId);
+
+                    try {
+                        await updateDoc(orderDocRef, {
+                            status: newStatus
+                        });
+                        console.log(`Order #${orderId} status updated to: ${newStatus}`);
+                    } catch (error) {
+                        console.error("Error updating order status:", error);
+                        alert('Failed to update status. Check console for details.');
+                    }
+                };
+            });
+        };
+
+        // Initial setup on page load
+        window.onload = initFirebase;
+    </script>
+</body>
+</html>
