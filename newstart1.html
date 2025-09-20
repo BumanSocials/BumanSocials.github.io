@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafe Order System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+        }
+        .modal {
+            display: none;
+        }
+    </style>
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Log all Firebase SDK events to the console
+        setLogLevel('debug');
+        
+        // Global variables provided by the Canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        let userId = null;
+
+        // Global state for the app
+        let cart = {};
+        let orderId = null;
+        let tableNumber = 1;
+
+        // --- UI Element References ---
+        const menuContainer = document.getElementById('menu-items');
+        const cartContainer = document.getElementById('cart-items');
+        const totalAmountSpan = document.getElementById('total-amount');
+        const placeOrderBtn = document.getElementById('place-order-btn');
+        const orderStatusContainer = document.getElementById('order-status-container');
+        const orderStatusText = document.getElementById('order-status-text');
+        const tableNumberDisplay = document.getElementById('table-number-display');
+        const orderStatusModal = document.getElementById('order-status-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const orderPlacedMessage = document.getElementById('order-placed-message');
+        const orderNumberText = document.getElementById('order-number-text');
+        const orderStatusMsg = document.getElementById('order-status-msg');
+
+        // --- Menu Data ---
+        const menu = [
+            { id: 'coffee', name: 'Coffee', price: 2.50, description: 'Freshly brewed black coffee.' },
+            { id: 'latte', name: 'Latte', price: 3.50, description: 'Espresso with steamed milk and a thin layer of foam.' },
+            { id: 'sandwich', name: 'Club Sandwich', price: 7.00, description: 'Toasted bread with turkey, bacon, lettuce, and tomato.' },
+            { id: 'muffin', name: 'Chocolate Muffin', price: 2.00, description: 'Delicious chocolate chip muffin.' },
+            { id: 'smoothie', name: 'Berry Smoothie', price: 5.50, description: 'Mixed berry smoothie made with yogurt.' },
+            { id: 'tea', name: 'Herbal Tea', price: 2.25, description: 'A soothing cup of herbal tea.' },
+            { id: 'croissant', name: 'Croissant', price: 3.00, description: 'Flaky, buttery croissant.' },
+            { id: 'pasta', name: 'Penne Pasta', price: 9.50, description: 'Penne pasta with a creamy tomato sauce.' },
+        ];
+        
+        // --- Helper Functions ---
+        
+        // Parses the URL to get the table number
+        const getTableNumber = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            return parseInt(urlParams.get('table'), 10) || 1;
+        };
+
+        // Renders the menu items to the UI
+        const renderMenu = () => {
+            menuContainer.innerHTML = '';
+            menu.forEach(item => {
+                const menuItem = document.createElement('div');
+                menuItem.className = 'bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 transform hover:scale-[1.01]';
+                menuItem.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-lg font-semibold text-gray-800">${item.name}</h3>
+                        <span class="text-xl font-bold text-indigo-600">$${item.price.toFixed(2)}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">${item.description}</p>
+                    <button data-id="${item.id}" class="add-to-cart-btn w-full bg-indigo-500 text-white py-2 rounded-md font-semibold hover:bg-indigo-600 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50">
+                        Add to Cart
+                    </button>
+                `;
+                menuContainer.appendChild(menuItem);
+            });
+
+            // Add event listeners to the "Add to Cart" buttons
+            document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const itemId = e.target.dataset.id;
+                    const selectedItem = menu.find(item => item.id === itemId);
+                    addToCart(selectedItem);
+                });
+            });
+        };
+
+        // Adds an item to the cart or increments its quantity
+        const addToCart = (item) => {
+            if (cart[item.id]) {
+                cart[item.id].quantity++;
+            } else {
+                cart[item.id] = { ...item, quantity: 1 };
+            }
+            renderCart();
+        };
+
+        // Renders the cart items and calculates the total
+        const renderCart = () => {
+            cartContainer.innerHTML = '';
+            let total = 0;
+            const cartItems = Object.values(cart);
+            
+            if (cartItems.length === 0) {
+                cartContainer.innerHTML = `<p class="text-center text-gray-500 py-8">Your cart is empty.</p>`;
+                placeOrderBtn.disabled = true;
+                placeOrderBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                placeOrderBtn.disabled = false;
+                placeOrderBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                
+                cartItems.forEach(item => {
+                    total += item.price * item.quantity;
+                    const cartItem = document.createElement('div');
+                    cartItem.className = 'flex items-center justify-between bg-gray-50 p-3 rounded-lg mb-2';
+                    cartItem.innerHTML = `
+                        <div>
+                            <p class="font-medium text-gray-800">${item.name}</p>
+                            <p class="text-sm text-gray-500">$${item.price.toFixed(2)} x ${item.quantity}</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button data-id="${item.id}" class="quantity-btn bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-sm font-bold hover:bg-gray-300 transition-colors">-</button>
+                            <span class="font-semibold text-gray-800">${item.quantity}</span>
+                            <button data-id="${item.id}" class="quantity-btn bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-sm font-bold hover:bg-gray-300 transition-colors">+</button>
+                            <button data-id="${item.id}" class="remove-from-cart-btn text-red-500 hover:text-red-700 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 011 1v6a1 1 0 11-2 0V8a1 1 0 011-1z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    cartContainer.appendChild(cartItem);
+                });
+            }
+
+            totalAmountSpan.textContent = total.toFixed(2);
+            
+            // Re-attach event listeners for quantity buttons
+            document.querySelectorAll('.quantity-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const itemId = e.target.dataset.id;
+                    const action = e.target.textContent;
+                    if (action === '+') {
+                        cart[itemId].quantity++;
+                    } else if (action === '-') {
+                        cart[itemId].quantity--;
+                        if (cart[itemId].quantity <= 0) {
+                            delete cart[itemId];
+                        }
+                    }
+                    renderCart();
+                });
+            });
+
+            // Re-attach event listeners for remove buttons
+            document.querySelectorAll('.remove-from-cart-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const itemId = e.currentTarget.dataset.id;
+                    delete cart[itemId];
+                    renderCart();
+                });
+            });
+        };
+
+        // --- Main Logic ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                tableNumber = getTableNumber();
+                tableNumberDisplay.textContent = tableNumber;
+                console.log(`User signed in with UID: ${userId} for table ${tableNumber}`);
+                
+                renderMenu();
+                renderCart();
+                setupEventListeners();
+
+                // Check for existing pending orders for this user/table
+                const ordersRef = collection(db, `artifacts/${appId}/public/data/orders`);
+                const q = query(ordersRef, where("userId", "==", userId), where("status", "in", ["pending", "preparing"]));
+                const querySnapshot = await getDocs(q);
+                
+                if (!querySnapshot.empty) {
+                    const existingOrder = querySnapshot.docs[0];
+                    orderId = existingOrder.id;
+                    console.log(`Found existing order with ID: ${orderId}`);
+                    startOrderStatusListener(orderId);
+                }
+
+            } else {
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        console.log("Signed in with custom token.");
+                    } else {
+                        await signInAnonymously(auth);
+                        console.log("Signed in anonymously.");
+                    }
+                } catch (error) {
+                    console.error("Firebase auth error:", error);
+                }
+            }
+        });
+
+        // Sets up the event listener for the place order button
+        const setupEventListeners = () => {
+            placeOrderBtn.addEventListener('click', async () => {
+                if (Object.keys(cart).length === 0) {
+                    // Using a modal instead of alert()
+                    showModal("Your cart is empty. Please add items to place an order.");
+                    return;
+                }
+                
+                const orderData = {
+                    tableNumber: tableNumber,
+                    userId: userId,
+                    items: Object.values(cart).map(item => ({
+                        name: item.name,
+                        price: item.price,
+                        quantity: item.quantity
+                    })),
+                    status: 'pending',
+                    timestamp: Timestamp.now()
+                };
+
+                // Add the new order to the Firestore database
+                const ordersRef = collection(db, `artifacts/${appId}/public/data/orders`);
+                try {
+                    const docRef = await addDoc(ordersRef, orderData);
+                    orderId = docRef.id;
+                    orderPlacedMessage.classList.remove('hidden');
+                    orderNumberText.textContent = orderId.substring(0, 8);
+                    
+                    // Clear the local cart state
+                    cart = {};
+                    renderCart();
+                    
+                    startOrderStatusListener(orderId);
+                    
+                } catch (e) {
+                    console.error("Error adding document: ", e);
+                    showModal("There was an error placing your order. Please try again.");
+                }
+            });
+            
+            closeModalBtn.addEventListener('click', () => {
+                orderStatusModal.classList.add('hidden');
+            });
+        };
+        
+        // Starts listening to real-time status updates for a specific order
+        const startOrderStatusListener = (id) => {
+            const docRef = doc(db, `artifacts/${appId}/public/data/orders`, id);
+            
+            // Stop any existing listener before starting a new one
+            if (window.unsubscribeListener) {
+                window.unsubscribeListener();
+            }
+
+            window.unsubscribeListener = onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const order = docSnap.data();
+                    orderStatusContainer.classList.remove('hidden');
+                    orderStatusText.textContent = `Status: ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}`;
+                    
+                    if (order.status === 'ready' || order.status === 'served') {
+                        showModal(`Order #${orderId.substring(0, 8)} is ready!`);
+                    } else {
+                        // Using a simple message for status update
+                        orderStatusMsg.textContent = `Your order is currently ${order.status}.`;
+                    }
+                } else {
+                    console.log("Order no longer exists.");
+                    orderStatusContainer.classList.add('hidden');
+                    window.unsubscribeListener = null;
+                }
+            });
+        };
+        
+        // Shows a custom modal with a message
+        const showModal = (message) => {
+            orderStatusText.textContent = message;
+            orderStatusModal.classList.remove('hidden');
+        };
+    </script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center py-8 px-4">
+
+    <!-- Modal for messages -->
+    <div id="order-status-modal" class="modal fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+            <h3 class="text-xl font-bold mb-4">Order Update</h3>
+            <p id="order-status-msg" class="text-gray-700 mb-6">Your order is ready!</p>
+            <button id="close-modal-btn" class="bg-indigo-500 text-white font-semibold py-2 px-6 rounded-md hover:bg-indigo-600 transition-colors">Close</button>
+        </div>
+    </div>
+
+    <main class="w-full max-w-4xl mx-auto space-y-8">
+        <!-- Header -->
+        <header class="bg-white p-6 rounded-xl shadow-lg text-center">
+            <h1 class="text-4xl font-bold text-gray-900">The Corner Cafe</h1>
+            <p class="text-lg text-gray-600 mt-2">Table: <span id="table-number-display" class="font-bold text-indigo-600">--</span></p>
+        </header>
+
+        <!-- Main Content Grid -->
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Menu Section -->
+            <section class="bg-white p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-gray-200 pb-2">Menu</h2>
+                <div id="menu-items" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Menu items will be rendered here by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Order Cart Section -->
+            <section class="bg-white p-6 rounded-xl shadow-lg h-full flex flex-col">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-gray-200 pb-2">Your Order</h2>
+                <div id="cart-items" class="flex-grow overflow-y-auto mb-4">
+                    <!-- Cart items will be rendered here by JavaScript -->
+                </div>
+                
+                <div class="flex-shrink-0">
+                    <div class="flex justify-between items-center text-xl font-bold text-gray-800 mb-4 pt-4 border-t-2 border-gray-200">
+                        <span>Total:</span>
+                        <span>$<span id="total-amount">0.00</span></span>
+                    </div>
+                    <button id="place-order-btn" class="w-full bg-indigo-500 text-white py-3 rounded-lg font-bold text-lg hover:bg-indigo-600 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Place Order
+                    </button>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Order Placed Confirmation and Status -->
+        <div id="order-placed-message" class="hidden bg-green-500 text-white p-6 rounded-xl shadow-lg text-center mt-8">
+            <h3 class="text-2xl font-bold mb-2">Order Placed!</h3>
+            <p>Your order number is <span id="order-number-text" class="font-bold"></span>.</p>
+        </div>
+        
+        <div id="order-status-container" class="hidden bg-white p-6 rounded-xl shadow-lg text-center mt-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Order Status</h3>
+            <p id="order-status-text" class="text-xl text-indigo-600 font-semibold">Status: Pending...</p>
+        </div>
+    </main>
+
+</body>
+</html>
