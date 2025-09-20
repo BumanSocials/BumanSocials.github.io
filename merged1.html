@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafe POS System</title>
+    <!-- Google Fonts for Material You typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /*
+        * Material You Inspired Color Palette
+        * Tonal colors suitable for a cafe theme.
+        */
+        :root {
+            --md-sys-color-primary: #6F4E37; /* A warm, deep brown */
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #F1E5D7; /* A light, creamy background */
+            --md-sys-color-on-primary-container: #2A170C;
+            --md-sys-color-secondary: #9C6644; /* A rich, toasted brown */
+            --md-sys-color-on-secondary: #FFFFFF;
+            --md-sys-color-surface: #FFFBFE;
+            --md-sys-color-on-surface: #1C1B1F;
+            --md-sys-color-background: #FFFBFE;
+            --md-sys-color-on-background: #1C1B1F;
+            --md-sys-color-error: #BA1A1A;
+            --md-sys-color-on-error: #FFFFFF;
+            --md-sys-color-success: #388E3C;
+            --md-sys-color-on-success: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--md-sys-color-background);
+            color: var(--md-sys-color-on-background);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header-nav {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .header-nav button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border: 2px solid var(--md-sys-color-primary);
+            border-radius: 999px;
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .header-nav button:hover, .header-nav button.active {
+            background-color: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+        }
+
+        #customer-view, #counter-view {
+            width: 100%;
+            max-width: 800px;
+            transition: opacity 0.5s ease-in-out;
+            display: none; /* Hidden by default */
+        }
+        
+        #customer-view.active, #counter-view.active {
+            display: block;
+        }
+
+        /* Customer View Specific Styles */
+        .cafe-container {
+            background-color: var(--md-sys-color-surface);
+            border-radius: 28px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--md-sys-color-primary);
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            color: var(--md-sys-color-on-surface);
+            opacity: 0.7;
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 16px;
+        }
+        
+        .menu-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--md-sys-color-primary-container);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+        }
+        
+        .menu-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .item-image {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 8px;
+        }
+        
+        .item-name {
+            font-weight: 500;
+            color: var(--md-sys-color-on-primary-container);
+            font-size: 1rem;
+        }
+        
+        .item-price {
+            font-weight: 700;
+            color: var(--md-sys-color-secondary);
+            font-size: 1.1rem;
+        }
+        
+        .add-to-cart-btn {
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .add-to-cart-btn:hover {
+            background-color: var(--md-sys-color-secondary);
+        }
+        
+        .cart-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            padding-top: 24px;
+        }
+        
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            font-size: 1.2rem;
+            color: var(--md-sys-color-on-surface);
+        }
+        
+        .cart-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background-color: var(--md-sys-color-surface);
+            border-radius: 12px;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .cart-item .name {
+            flex-grow: 1;
+        }
+        
+        .cart-item .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .cart-item .quantity-btn {
+            background-color: transparent;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: var(--md-sys-color-on-surface);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .cart-item .remove-btn {
+            color: var(--md-sys-color-error);
+            cursor: pointer;
+            margin-left: 12px;
+        }
+        
+        .cart-totals {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        
+        .cart-total-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .confirm-btn {
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            padding: 1rem;
+            border-radius: 12px;
+            border: none;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.2s ease;
+        }
+        
+        .confirm-btn:disabled {
+            background-color: var(--md-sys-color-on-surface);
+            opacity: 0.38;
+            cursor: not-allowed;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.4s, opacity 0.4s ease-in-out;
+        }
+        
+        .modal.is-visible {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .modal-content {
+            background-color: var(--md-sys-color-surface);
+            padding: 30px;
+            border-radius: 28px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .modal-icon {
+            font-size: 4rem;
+            color: var(--md-sys-color-primary);
+        }
+        
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+        }
+        
+        .modal-text {
+            text-align: center;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--md-sys-color-on-surface);
+            opacity: 0.8;
+        }
+        
+        .modal-footer {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .modal-button {
+            width: 100%;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .modal-button.primary {
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+        }
+        
+        .modal-button.primary:hover {
+            background-color: var(--md-sys-color-secondary);
+        }
+        
+        .modal-button.secondary {
+            background-color: transparent;
+            color: var(--md-sys-color-primary);
+            border: 2px solid var(--md-sys-color-primary);
+        }
+
+        .summary-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1rem;
+            border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+            padding-bottom: 8px;
+        }
+
+        .summary-totals {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .summary-totals-row {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .order-status {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
+            padding: 1rem;
+            text-align: center;
+            border-radius: 12px;
+            margin-top: 1rem;
+            border: 1px solid rgba(0,0,0,0.1);
+            background-color: var(--md-sys-color-primary-container);
+        }
+
+        .status-pending { background-color: #FFECB3; color: #795548; }
+        .status-in-process { background-color: #B2DFDB; color: #00796B; }
+        .status-ready { background-color: #C8E6C9; color: #388E3C; }
+        .status-completed { background-color: #E0E0E0; color: #616161; }
+
+        /* Counter View Specific Styles */
+        .counter-container {
+            background-color: var(--md-sys-color-surface);
+            border-radius: 28px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            min-height: 80vh;
+        }
+
+        .counter-header {
+            text-align: center;
+        }
+
+        .orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .order-card {
+            background-color: var(--md-sys-color-primary-container);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            border-bottom: 2px solid var(--md-sys-color-secondary);
+            padding-bottom: 10px;
+        }
+        
+        .order-id {
+            font-size: 1.5rem;
+            color: var(--md-sys-color-primary);
+        }
+        
+        .order-status-badge {
+            font-size: 0.9rem;
+            padding: 4px 12px;
+            border-radius: 50px;
+            color: var(--md-sys-color-on-primary);
+            font-weight: 500;
+        }
+        
+        .status-pending-badge { background-color: #FFC107; }
+        .status-in-process-badge { background-color: #00BCD4; }
+        .status-ready-badge { background-color: #4CAF50; }
+        .status-completed-badge { background-color: #9E9E9E; }
+        
+        .order-items-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+        }
+        
+        .order-item-name {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .order-item-price {
+            font-weight: 500;
+            color: var(--md-sys-color-secondary);
+        }
+        
+        .order-card .order-totals {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--md-sys-color-on-primary-container);
+        }
+        
+        .order-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .action-button {
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: none;
+            color: var(--md-sys-color-on-primary);
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .in-process-btn { background-color: var(--md-sys-color-primary); }
+        .in-process-btn:hover { background-color: #5d422f; }
+        
+        .ready-btn { background-color: #2E7D32; }
+        .ready-btn:hover { background-color: #1B5E20; }
+        
+        .completed-btn { background-color: #757575; }
+        .completed-btn:hover { background-color: #616161; }
+        
+    </style>
+</head>
+<body>
+
+    <div class="header-nav">
+        <button id="customer-btn" class="active">Customer View</button>
+        <button id="counter-btn">Counter View</button>
+    </div>
+
+    <div id="customer-view" class="active">
+        <div class="cafe-container">
+            <header class="header">
+                <h1 class="title">Buman's Brews</h1>
+                <p class="subtitle">A Coffee Experience Like No Other</p>
+            </header>
+            
+            <section class="menu-grid" id="menu-container">
+                <!-- Menu items will be generated here by JavaScript -->
+            </section>
+            
+            <section class="cart-section">
+                <div class="cart-header">
+                    <h2>Your Order</h2>
+                    <span id="cart-item-count">0 items</span>
+                </div>
+                <ul class="cart-list" id="cart-list">
+                    <!-- Cart items will be generated here -->
+                </ul>
+                <div class="cart-totals">
+                    <div class="cart-total-row">
+                        <span>Subtotal</span>
+                        <span id="cart-subtotal">$0.00</span>
+                    </div>
+                    <div class="cart-total-row">
+                        <span>Tax (8%)</span>
+                        <span id="cart-tax">$0.00</span>
+                    </div>
+                    <div class="cart-total-row" style="font-size: 1.4rem;">
+                        <span>Total</span>
+                        <span id="cart-total">$0.00</span>
+                    </div>
+                </div>
+                <button class="confirm-btn" id="confirm-order-btn" disabled>Confirm Order</button>
+                <div id="order-status-display" class="order-status" style="display: none;"></div>
+            </section>
+        </div>
+
+        <!-- Order Confirmation Modal -->
+        <div id="order-modal" class="modal">
+            <div class="modal-content">
+                <i class="fa-solid fa-circle-check modal-icon" style="color: var(--md-sys-color-success);"></i>
+                <h2 class="modal-title">Order Confirmed!</h2>
+                <p class="modal-text">Your order ID is <span id="order-id-display"></span>.</p>
+                <div class="modal-footer">
+                    <button id="modal-ok-btn" class="modal-button primary">OK</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payment Modal -->
+        <div id="payment-modal" class="modal">
+            <div class="modal-content">
+                <i class="fa-solid fa-receipt modal-icon"></i>
+                <h2 class="modal-title">Order Summary</h2>
+                <p class="modal-text">Please review your order before confirming.</p>
+                <ul class="summary-list" id="summary-items-container"></ul>
+                <div class="summary-totals">
+                    <div class="summary-totals-row">
+                        <span>Subtotal</span>
+                        <span id="summary-subtotal-el">$0.00</span>
+                    </div>
+                    <div class="summary-totals-row">
+                        <span>Tax</span>
+                        <span id="summary-tax-el">$0.00</span>
+                    </div>
+                    <div class="summary-totals-row">
+                        <span>Total</span>
+                        <span id="summary-total-el">$0.00</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="confirm-payment-btn" class="modal-button primary">Confirm & Pay</button>
+                    <button id="cancel-payment-btn" class="modal-button secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="counter-view">
+        <div class="counter-container">
+            <header class="counter-header">
+                <h1 class="title">Counter Dashboard</h1>
+                <p class="subtitle">Real-time Order Management</p>
+            </header>
+            
+            <section id="orders-grid" class="orders-grid">
+                <!-- Order cards will be generated here -->
+            </section>
+        </div>
+    </div>
+
+    <script type="module">
+        // Global variables for Firebase
+        let db;
+        let auth;
+        let userId;
+
+        // File-specific code from customer_view.html
+        const menuItems = [
+            { id: 1, name: 'Espresso', price: 2.50, image: '☕' },
+            { id: 2, name: 'Latte', price: 4.00, image: '🥛' },
+            { id: 3, name: 'Cappuccino', price: 4.00, image: '☕' },
+            { id: 4, name: 'Mocha', price: 4.50, image: '🍫' },
+            { id: 5, name: 'Iced Coffee', price: 3.50, image: '🧊' },
+            { id: 6, name: 'Croissant', price: 3.00, image: '🥐' },
+            { id: 7, name: 'Muffin', price: 2.75, image: '🧁' },
+            { id: 8, name: 'Cookie', price: 2.00, image: '🍪' }
+        ];
+
+        let cart = [];
+        let orderId = null;
+
+        const menuContainer = document.getElementById('menu-container');
+        const cartList = document.getElementById('cart-list');
+        const cartItemCount = document.getElementById('cart-item-count');
+        const cartSubtotalEl = document.getElementById('cart-subtotal');
+        const cartTaxEl = document.getElementById('cart-tax');
+        const cartTotalEl = document.getElementById('cart-total');
+        const confirmOrderBtn = document.getElementById('confirm-order-btn');
+        const orderModal = document.getElementById('order-modal');
+        const modalOkBtn = document.getElementById('modal-ok-btn');
+        const paymentModal = document.getElementById('payment-modal');
+        const confirmPaymentBtn = document.getElementById('confirm-payment-btn');
+        const cancelPaymentBtn = document.getElementById('cancel-payment-btn');
+        const summaryItemsContainer = document.getElementById('summary-items-container');
+        const summarySubtotalEl = document.getElementById('summary-subtotal-el');
+        const summaryTaxEl = document.getElementById('summary-tax-el');
+        const summaryTotalEl = document.getElementById('summary-total-el');
+        const orderIdDisplay = document.getElementById('order-id-display');
+        const orderStatusDisplay = document.getElementById('order-status-display');
+
+        // File-specific code from counter_view.html
+        const ordersGrid = document.getElementById('orders-grid');
+
+        // Navigation Elements
+        const customerBtn = document.getElementById('customer-btn');
+        const counterBtn = document.getElementById('counter-btn');
+        const customerView = document.getElementById('customer-view');
+        const counterView = document.getElementById('counter-view');
+
+        // Firebase-related imports and setup
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, query, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+        // Global Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJKZZTAQWjU6ZzB5ZuhTVQGrLmxOxy0nA",
+            authDomain: "buman-socials-f5eba.firebaseapp.com",
+            projectId: "buman-socials-f5eba",
+            storageBucket: "buman-socials-f5eba.firebasestorage.app",
+            messagingSenderId: "658433093259",
+            appId: "1:658433093259:web:9452814b7e887f4a5c9d92",
+            measurementId: "G-F3L4D8K9L2"
+        };
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        
+        // --- Core Application Logic ---
+
+        // Listen for auth state changes to ensure Firebase is ready
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in.
+                userId = user.uid;
+                console.log("Firebase initialized and user signed in. User ID:", userId);
+                // Start listening for orders once authenticated
+                listenForOrders();
+            } else {
+                // User is signed out. Sign in anonymously.
+                console.log("No user found. Signing in anonymously...");
+                signInAnonymously(auth).catch((error) => {
+                    console.error("Firebase Auth Error:", error);
+                });
+            }
+        });
+
+
+        // --- Customer View Functions ---
+
+        // Render menu items
+        function renderMenu() {
+            menuContainer.innerHTML = '';
+            menuItems.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.classList.add('menu-item');
+                itemEl.innerHTML = `
+                    <div class="item-image">${item.image}</div>
+                    <span class="item-name">${item.name}</span>
+                    <span class="item-price">$${item.price.toFixed(2)}</span>
+                    <button class="add-to-cart-btn" data-id="${item.id}">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                `;
+                menuContainer.appendChild(itemEl);
+            });
+        }
+
+        // Update cart UI
+        function updateCart() {
+            cartList.innerHTML = '';
+            cartItemCount.textContent = `${cart.length} items`;
+            confirmOrderBtn.disabled = cart.length === 0;
+
+            cart.forEach(item => {
+                const li = document.createElement('li');
+                li.classList.add('cart-item');
+                li.innerHTML = `
+                    <span class="name">${item.name}</span>
+                    <div class="quantity-controls">
+                        <button class="quantity-btn decrease-quantity" data-id="${item.id}">-</button>
+                        <span>${item.quantity}</span>
+                        <button class="quantity-btn increase-quantity" data-id="${item.id}">+</button>
+                    </div>
+                    <span class="price">$${(item.price * item.quantity).toFixed(2)}</span>
+                    <i class="fas fa-times remove-btn" data-id="${item.id}"></i>
+                `;
+                cartList.appendChild(li);
+            });
+            updateTotals();
+        }
+
+        // Calculate and update totals
+        function updateTotals() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = subtotal * 0.08;
+            const total = subtotal + tax;
+
+            cartSubtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+            cartTaxEl.textContent = `$${tax.toFixed(2)}`;
+            cartTotalEl.textContent = `$${total.toFixed(2)}`;
+        }
+
+        // Add item to cart
+        function addToCart(itemId) {
+            const existingItem = cart.find(item => item.id === itemId);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                const itemToAdd = menuItems.find(item => item.id === itemId);
+                if (itemToAdd) {
+                    cart.push({ ...itemToAdd, quantity: 1 });
+                }
+            }
+            updateCart();
+        }
+
+        // Place a new order in Firestore
+        async function placeOrder() {
+            if (cart.length === 0) return;
+
+            if (!userId) {
+                console.error("User not authenticated. Cannot place order.");
+                return;
+            }
+
+            const newOrderRef = doc(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/orders`));
+            const newOrder = {
+                items: cart,
+                subtotal: parseFloat(cartSubtotalEl.textContent.replace('$', '')),
+                tax: parseFloat(cartTaxEl.textContent.replace('$', '')),
+                total: parseFloat(cartTotalEl.textContent.replace('$', '')),
+                status: 'pending',
+                userId: userId,
+                orderId: newOrderRef.id,
+                createdAt: new Date()
+            };
+
+            try {
+                await setDoc(newOrderRef, newOrder);
+                orderId = newOrderRef.id;
+                console.log(`Order placed successfully with ID: ${orderId}`);
+                listenForStatusUpdates(); // Listen for status changes for this specific order
+            } catch (error) {
+                console.error("Error placing order:", error);
+            }
+        }
+
+        // Listen for status changes on the customer's order
+        function listenForStatusUpdates() {
+            if (!orderId) return;
+            const orderDocRef = doc(db, `artifacts/${firebaseConfig.projectId}/public/data/orders`, orderId);
+            onSnapshot(orderDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const orderData = docSnap.data();
+                    const status = orderData.status;
+                    updateOrderStatusDisplay(status);
+                }
+            }, (error) => {
+                console.error("Error listening to order status:", error);
+            });
+        }
+
+        // Update the order status display on the customer view
+        function updateOrderStatusDisplay(status) {
+            let statusText = '';
+            let statusClass = '';
+
+            switch (status) {
+                case 'pending':
+                    statusText = 'Order Status: Pending...';
+                    statusClass = 'status-pending';
+                    break;
+                case 'in-process':
+                    statusText = 'Order Status: In Process...';
+                    statusClass = 'status-in-process';
+                    break;
+                case 'ready':
+                    statusText = 'Order Status: Ready for Pickup!';
+                    statusClass = 'status-ready';
+                    break;
+                case 'completed':
+                    statusText = 'Order Status: Completed!';
+                    statusClass = 'status-completed';
+                    break;
+                default:
+                    statusText = 'Order Status: Unknown';
+                    statusClass = '';
+            }
+
+            orderStatusDisplay.textContent = statusText;
+            orderStatusDisplay.className = `order-status ${statusClass}`;
+            orderStatusDisplay.style.display = 'block';
+        }
+
+        function showOrderModal(id) {
+            orderIdDisplay.textContent = id;
+            orderModal.style.display = 'flex';
+            setTimeout(() => orderModal.classList.add('is-visible'), 10);
+        }
+
+        function hideOrderModal() {
+            orderModal.classList.remove('is-visible');
+            setTimeout(() => orderModal.style.display = 'none', 500);
+            cart = [];
+            orderId = null;
+            updateCart();
+        }
+
+        function showPaymentModal() {
+            populateSummary();
+            paymentModal.style.display = 'flex';
+            setTimeout(() => paymentModal.classList.add('is-visible'), 10);
+        }
+
+        function hidePaymentModal() {
+            paymentModal.classList.remove('is-visible');
+            setTimeout(() => paymentModal.style.display = 'none', 500);
+        }
+
+        function populateSummary() {
+            summaryItemsContainer.innerHTML = '';
+            let summarySubtotal = 0;
+            
+            cart.forEach(item => {
+                const li = document.createElement('li');
+                li.classList.add('summary-item');
+                li.innerHTML = `
+                    <span class="item-name">${item.name} (${item.quantity})</span>
+                    <span class="item-price">$${(item.price * item.quantity).toFixed(2)}</span>
+                `;
+                summaryItemsContainer.appendChild(li);
+                summarySubtotal += item.price * item.quantity;
+            });
+            
+            const summaryTax = summarySubtotal * 0.08;
+            const summaryTotal = summarySubtotal + summaryTax;
+            
+            summarySubtotalEl.textContent = `$${summarySubtotal.toFixed(2)}`;
+            summaryTaxEl.textContent = `$${summaryTax.toFixed(2)}`;
+            summaryTotalEl.textContent = `$${summaryTotal.toFixed(2)}`;
+        }
+        
+        // --- Counter View Functions ---
+
+        // Listen for new orders in Firestore
+        function listenForOrders() {
+            const ordersCollectionRef = collection(db, `artifacts/${firebaseConfig.projectId}/public/data/orders`);
+            const q = query(ordersCollectionRef, orderBy('createdAt', 'desc'));
+            onSnapshot(q, (snapshot) => {
+                console.log("Received a new snapshot from Firestore.");
+                const orders = [];
+                snapshot.forEach((doc) => {
+                    orders.push(doc.data());
+                });
+                renderOrders(orders);
+            }, (error) => {
+                console.error("Error listening to orders:", error);
+            });
+        }
+
+        // Render orders on the counter dashboard
+        function renderOrders(orders) {
+            ordersGrid.innerHTML = '';
+            if (orders.length === 0) {
+                ordersGrid.innerHTML = '<p style="text-align: center; color: #888;">No new orders yet.</p>';
+            }
+
+            orders.forEach(order => {
+                const card = document.createElement('div');
+                card.classList.add('order-card');
+                card.dataset.orderId = order.orderId;
+                
+                const itemsList = order.items.map(item => `
+                    <li class="order-item">
+                        <span class="order-item-name">${item.name} (${item.quantity})</span>
+                        <span class="order-item-price">$${(item.price * item.quantity).toFixed(2)}</span>
+                    </li>
+                `).join('');
+
+                const statusBadgeClass = `status-${order.status.replace('-', '')}-badge`;
+                
+                card.innerHTML = `
+                    <div class="order-header">
+                        <span class="order-id">#${order.orderId.substring(0, 6)}</span>
+                        <span class="order-status-badge ${statusBadgeClass}">${order.status.replace('-', ' ')}</span>
+                    </div>
+                    <ul class="order-items-list">${itemsList}</ul>
+                    <div class="order-totals">Total: $${order.total.toFixed(2)}</div>
+                    <div class="order-actions">
+                        <button class="action-button in-process-btn" data-status="in-process" ${order.status === 'in-process' || order.status === 'ready' || order.status === 'completed' ? 'disabled' : ''}>Mark In Process</button>
+                        <button class="action-button ready-btn" data-status="ready" ${order.status === 'ready' || order.status === 'completed' ? 'disabled' : ''}>Mark Ready</button>
+                        <button class="action-button completed-btn" data-status="completed" ${order.status === 'completed' ? 'disabled' : ''}>Mark Completed</button>
+                    </div>
+                `;
+                ordersGrid.appendChild(card);
+            });
+
+            // Add event listeners to the new buttons
+            document.querySelectorAll('.action-button').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const orderCard = e.target.closest('.order-card');
+                    const orderId = orderCard.dataset.orderId;
+                    const newStatus = e.target.dataset.status;
+                    
+                    try {
+                        const orderRef = doc(db, `artifacts/${firebaseConfig.projectId}/public/data/orders`, orderId);
+                        await updateDoc(orderRef, {
+                            status: newStatus
+                        });
+                        console.log(`Order #${orderId} status updated to: ${newStatus}`);
+                    } catch (error) {
+                        console.error("Error updating order status:", error);
+                    }
+                });
+            });
+        }
+
+        // --- Event Listeners and Initial Setup ---
+        
+        // Navigation buttons
+        customerBtn.addEventListener('click', () => switchView('customer-view'));
+        counterBtn.addEventListener('click', () => switchView('counter-view'));
+
+        function switchView(viewName) {
+            customerBtn.classList.remove('active');
+            counterBtn.classList.remove('active');
+            customerView.classList.remove('active');
+            counterView.classList.remove('active');
+
+            if (viewName === 'customer-view') {
+                customerBtn.classList.add('active');
+                customerView.classList.add('active');
+            } else if (viewName === 'counter-view') {
+                counterBtn.classList.add('active');
+                counterView.classList.add('active');
+            }
+        }
+
+        // Customer view event listeners
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('add-to-cart-btn')) {
+                const itemId = parseInt(e.target.dataset.id);
+                addToCart(itemId);
+            } else if (e.target.classList.contains('increase-quantity')) {
+                const itemId = parseInt(e.target.dataset.id);
+                const existingItem = cart.find(item => item.id === itemId);
+                if (existingItem) {
+                    existingItem.quantity++;
+                    updateCart();
+                }
+            } else if (e.target.classList.contains('decrease-quantity')) {
+                const itemId = parseInt(e.target.dataset.id);
+                const existingItem = cart.find(item => item.id === itemId);
+                if (existingItem && existingItem.quantity > 1) {
+                    existingItem.quantity--;
+                    updateCart();
+                } else if (existingItem && existingItem.quantity === 1) {
+                    cart = cart.filter(item => item.id !== itemId);
+                    updateCart();
+                }
+            } else if (e.target.classList.contains('remove-btn')) {
+                const itemId = parseInt(e.target.dataset.id);
+                cart = cart.filter(item => item.id !== itemId);
+                updateCart();
+            }
+        });
+
+        confirmOrderBtn.addEventListener('click', showPaymentModal);
+        confirmPaymentBtn.addEventListener('click', async () => {
+            hidePaymentModal();
+            await placeOrder();
+            orderStatusDisplay.style.display = 'block';
+            orderStatusDisplay.className = 'order-status status-pending';
+            orderStatusDisplay.textContent = 'Order Status: Pending...';
+        });
+        cancelPaymentBtn.addEventListener('click', hidePaymentModal);
+        modalOkBtn.addEventListener('click', hideOrderModal);
+        
+        window.onload = () => {
+            renderMenu();
+            updateCart();
+            switchView('customer-view');
+        };
+    </script>
+</body>
+</html>
